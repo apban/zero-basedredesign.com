@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Governance — Zero-based redesign</title>
+<meta name="author" content="Adam Bankhead">
+<meta name="description" content="A small number of properties keep an AI integration safe over time. The system only reads from the source systems and never writes to them. The data it dep">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="wrap">
+<a class="kicker" href="/">Zero-based redesign</a>
+<article>
+<h1>Governance</h1>
+<p>A small number of properties keep an AI integration safe over time. The system only reads from the source systems and never writes to them. The data it depends on lives in a store the organization owns, in open formats it can read without asking anyone. Every change it makes can be reversed, and every change can be measured against what came before. These properties sound like a checklist, and that is exactly the mistake. They are not a stage of the work. They are attributes that every part of the work either has or lacks.</p>
+<p>The distinction is easiest to see by picturing the work as a table. The rows are the stages: connect to the sources, align the terms, build the logic, produce the output, put it in front of people. The safety properties are not another row at the bottom, a step called governance that happens after the real work. They are columns that run across every row. Read-only access is a column: each stage either touches the source systems in read-only fashion or it does not. Reversibility is a column: each stage either produces changes that can be undone or it produces changes that cannot. Ownership of the data in open formats is a column. Measurability is a column. A property in a column is a question you can ask of every single row, and the integration is only as safe as the weakest row answers.</p>
+<p>When these properties are treated as a separate step instead of a column, they become decorative. A governance phase tacked onto the end can only describe what was already built. If a stage in the middle writes directly to a source system, a late review can note the risk, but it cannot remove it without rebuilding that stage. If the data was captured in a proprietary format that only one vendor can read, a policy document declaring that the organization owns its data does not make the data readable. The step produces artifacts, a diagram, a sign-off, a page of principles, and the artifacts assert properties the system does not actually have. That is what decorative means here: the governance exists on paper and not in the system, and the gap between them is invisible until something goes wrong.</p>
+<p>Read-only access shows why the property has to be built in at every stage. The value of never writing to the source systems is that the integration cannot corrupt the records the business runs on. If any single stage has write access, that guarantee is gone for the whole system, no matter what the other stages do. It is not a property you can add later by putting a check in front of the writes, because the write path already exists and someone will eventually use it. The only way to have the property is for every stage that reaches a source system to reach it in a way that cannot write, and that is a decision made when each connection is built, not reviewed after all of them are.</p>
+<p>Reversibility is the same. A change that can be undone is one where the previous state was preserved and the operation was recorded well enough to walk backward. That has to be true of the operation itself. Bolting an undo feature onto a stage that overwrote its inputs and kept no history cannot recover what the overwrite destroyed. Measurability is also the same: comparing a change against what came before requires that what came before was captured at the moment of the change, which is a property of how the stage was built, not something a later analysis can supply. In each case the property lives in the construction of the stage or it does not live at all.</p>
+<p>This is why governance is a column and not a row. A row is a thing you do once, in sequence, and then move past. A column is a standard that every row is held to, checked at each row as that row is built. The safety of the integration is decided continuously, in how each stage connects, stores, changes, and records, and not in a single later act of approval. The organization that gets this right does not schedule governance. It builds each stage to satisfy the columns, and the review at the end confirms properties the system already has rather than wishing for properties it lacks. The organization that gets it wrong holds a review, files the artifacts, and discovers the first time something breaks that the properties were only ever written down.</p>
+</article>
+<footer>
+<p><a href="/">Back to the notes</a></p>
+</footer>
+</main>
+</body>
+</html>

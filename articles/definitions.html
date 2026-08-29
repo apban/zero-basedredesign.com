@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Definitions — Zero-based redesign</title>
+<meta name="author" content="Adam Bankhead">
+<meta name="description" content="On a real business problem, accuracy usually turns on definitions, not on the size of the model. This runs against the common instinct, which is to reach f">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="wrap">
+<a class="kicker" href="/">Zero-based redesign</a>
+<article>
+<h1>Definitions</h1>
+<p>On a real business problem, accuracy usually turns on definitions, not on the size of the model. This runs against the common instinct, which is to reach for a larger model when results disappoint. The larger model helps on some kinds of problems. On the problems most companies actually have, a few pages of agreed definitions move results further than a bigger model or an elaborate knowledge graph, and they do it faster and cheaper.</p>
+<p>The reason is that most business questions are underspecified in ways the people asking them do not notice. A question like "how many active customers do we have" hides at least three separate decisions. What counts as a customer, the buyer or the paying account. What counts as active, ordered in the last month or the last year or simply not cancelled. And which records are even in scope, since the test accounts and the internal accounts and the long-closed accounts all sit in the same table. A person answering the question makes all three choices silently, using knowledge that lives in their head and nowhere in the data. A model has to make the same three choices and has no way to know the local convention, so it guesses, and its guess is wrong in a way that looks confident.</p>
+<p>Writing the definitions down fixes this directly. A customer is the paying account, identified by this field. Active means an order in the trailing twelve months, computed against this timestamp in this time zone. Test and internal accounts are excluded, and here is the flag that marks them. A page or two of statements like these removes the ambiguity that was causing the errors. The model was not failing because it lacked capacity. It was failing because the question had several valid answers and nothing told it which one the business meant.</p>
+<p>This also explains a pattern that confuses people about grounding. Feeding a model reference material, definitions, documents, retrieved facts, helps most where the model's training data is thin, and it can actively hurt where the training data is dense. On a rare, specific, in-house topic the model knows little, so the supplied material is almost all of what it has to work with, and good material produces good answers. On a common topic the model already holds strong, well-formed patterns from training. If the supplied material is thin, generic, or slightly off, it can pull the model away from the better answer it would have given on its own, and the result is worse than no grounding at all.</p>
+<p>That is the mechanism behind a familiar disappointment. A generic demonstration impresses, then the system fails on the specific case. The demo runs on a common, well-represented topic, so the model performs from its training and looks excellent, and the grounding barely matters. The real deployment runs on the company's specific case, which is rare and full of local meaning, and now the grounding matters enormously, because the model has little of its own to fall back on. The same system that dazzled on the generic case stumbles on the specific one, and the difference is not the model. It is that one case was dense in the training data and the other was thin, and the value of definitions moves in the opposite direction between them.</p>
+<p>The practical consequence is to size the model to the decisions, not to the domain. A large domain does not by itself demand a large model. What demands capacity is the difficulty of the individual decisions the system has to make. Many business decisions are simple once the terms are pinned down: apply a stated rule, match against a defined category, follow a threshold. Those run well on a modest model with clear definitions, and throwing a larger model at them changes little because the definitions were the constraint. The decisions that genuinely need more capacity are the ones that require real reasoning across ambiguous or conflicting inputs, and those are usually a small fraction of the whole.</p>
+<p>So the order of work is the reverse of the instinct. Write the definitions first, because they are cheap, they are the thing most likely to be wrong, and they are where the errors are actually coming from. Only after the terms mean something specific is it possible to see which decisions are still hard, and those are the ones that justify a larger model. Most of the accuracy was never waiting on the model. It was waiting on someone to say plainly what the words meant.</p>
+</article>
+<footer>
+<p><a href="/">Back to the notes</a></p>
+</footer>
+</main>
+</body>
+</html>

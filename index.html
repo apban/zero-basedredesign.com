@@ -103,6 +103,16 @@
   @media (prefers-reduced-motion: reduce) {
     .fade { opacity: 1; transform: none; animation: none; }
   }
+  .motion-fig { margin: 2.2rem 0 0; }
+  .motion-fig .tracks { display: grid; gap: 1rem; }
+  @media (min-width: 34rem) { .motion-fig .tracks { grid-template-columns: 1fr 1fr; } }
+  .motion-fig .track { border: 1px solid var(--rule); border-radius: 4px; padding: 0.5rem 0.6rem 0.6rem; }
+  .motion-fig .tlabel { display: block; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 0.4rem; }
+  .motion-fig canvas { display: block; width: 100%; height: auto; }
+  .fig-controls { margin: 0.9rem 0 0; }
+  #freezeBtn { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 0.75rem; color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 4px; padding: 0.42rem 0.8rem; cursor: pointer; }
+  #freezeBtn:hover { border-color: var(--accent); color: var(--accent); }
+  .motion-fig figcaption { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 0.8rem; line-height: 1.6; color: var(--ink-soft); margin-top: 0.9rem; }
 </style>
 </head>
 <body>
@@ -136,6 +146,16 @@
   <section id="an-open-problem" class="fade">
     <h2><a href="#an-open-problem">An open problem</a></h2>
     <p>One problem here is unsolved. Automated judgment of generated visuals works on a still frame, and a still frame carries almost no information about motion. Two animations that differ only in timing produce nearly identical frames at any instant, so a frame-based score cannot tell them apart, even when one reads as correct and the other as broken.</p>
+
+    <figure class="motion-fig" aria-label="Two waves that share an identical frozen frame while moving in opposite directions">
+      <div class="tracks">
+        <div class="track"><span class="tlabel">Wave A</span><canvas class="wave" data-dir="1"></canvas></div>
+        <div class="track"><span class="tlabel">Wave B</span><canvas class="wave" data-dir="-1"></canvas></div>
+      </div>
+      <div class="fig-controls"><button type="button" id="freezeBtn" aria-pressed="false">Freeze at the matching frame</button></div>
+      <figcaption>Both waves run on identical parameters and differ only in the direction of travel. Frozen at the matching instant, their frames are identical, yet one is moving right and the other left. A score read from a single frame cannot tell them apart.</figcaption>
+    </figure>
+
     <p>Judging motion needs a measurement over time, not a snapshot. No cheap one exists yet. It's the problem I'm working on now.</p>
   </section>
 
@@ -145,5 +165,53 @@
     <p>This page does not track you. No analytics, no cookies, no third-party requests.</p>
   </footer>
 </main>
+<script>
+(() => {
+  const canvases = [...document.querySelectorAll('.wave')];
+  if (!canvases.length) return;
+  const P = { bars: 11, periodMs: 3200, tMatch: 0.25 };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  let colors = readColors();
+  function readColors() {
+    const s = getComputedStyle(document.body);
+    return { bar: s.getPropertyValue('--accent').trim() || '#7a4a2b', rule: s.getPropertyValue('--rule').trim() || '#ccc' };
+  }
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { colors = readColors(); paint(); });
+  function size(c) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = c.clientWidth || 380, h = Math.round(w * 0.3);
+    c.width = w * dpr; c.height = h * dpr; c.__w = w; c.__h = h;
+    c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function draw(c, t) {
+    const ctx = c.getContext('2d'), w = c.__w, h = c.__h, N = P.bars, dir = +c.dataset.dir;
+    ctx.clearRect(0, 0, w, h);
+    const gap = w / N, bw = gap * 0.5, mid = h / 2, amp = h * 0.36;
+    ctx.strokeStyle = colors.rule; ctx.globalAlpha = 0.5;
+    ctx.beginPath(); ctx.moveTo(0, mid + 0.5); ctx.lineTo(w, mid + 0.5); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.fillStyle = colors.bar;
+    for (let i = 0; i < N; i++) {
+      const v = Math.sin(2 * Math.PI * (t - dir * i / N));
+      const bh = Math.max(2, Math.abs(v) * amp);
+      ctx.fillRect(i * gap + (gap - bw) / 2, v >= 0 ? mid - bh : mid, bw, bh);
+    }
+  }
+  let frozen = reduce.matches, start = performance.now();
+  const now = () => frozen ? P.tMatch : ((performance.now() - start) % P.periodMs) / P.periodMs;
+  function paint() { const t = now(); for (const c of canvases) draw(c, t); }
+  function loop() { if (frozen) return; paint(); requestAnimationFrame(loop); }
+  function resizeAll() { canvases.forEach(size); paint(); }
+  window.addEventListener('resize', resizeAll);
+  resizeAll();
+  const btn = document.getElementById('freezeBtn');
+  function label() { btn.textContent = frozen ? 'Play' : 'Freeze at the matching frame'; btn.setAttribute('aria-pressed', String(frozen)); }
+  btn.addEventListener('click', () => {
+    frozen = !frozen; label();
+    if (frozen) paint(); else { start = performance.now(); requestAnimationFrame(loop); }
+  });
+  label();
+  if (!frozen) requestAnimationFrame(loop);
+})();
+</script>
 </body>
 </html>

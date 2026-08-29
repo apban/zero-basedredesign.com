@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zero-based redesign — notes on rebuilding AI systems</title>
+<meta name="description" content="Notes on rebuilding AI systems from zero: reading the operational record, corrections as signal, definitions over model size, and an unsolved problem in judging motion.">
+<meta name="author" content="Adam Bankhead">
+<meta property="og:title" content="Zero-based redesign">
+<meta property="og:description" content="Notes on rebuilding AI systems from zero.">
+<meta property="og:type" content="article">
+<style>
+  :root {
+    --ink: #1b1a17;
+    --ink-soft: #57534a;
+    --bg: #f6f3ec;
+    --rule: #ddd6c7;
+    --accent: #7a4a2b;
+    --measure: 38rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e8e3d8;
+      --ink-soft: #a49d8d;
+      --bg: #15140f;
+      --rule: #322f27;
+      --accent: #cf9a6a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 1.18rem/1.62 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: 5.5rem 1.5rem 4rem;
+  }
+  header { margin-bottom: 4rem; }
+  h1 {
+    font-size: 2.15rem;
+    line-height: 1.12;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.6rem;
+  }
+  .standfirst {
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 1.15rem;
+    margin: 0;
+  }
+  section { margin: 0 0 3.1rem; }
+  h2 {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.85rem;
+  }
+  h2 a {
+    color: inherit;
+    text-decoration: none;
+    border: 0;
+  }
+  h2 a::before {
+    content: "";
+    display: inline-block;
+    width: 1.4rem;
+    height: 0.5em;
+    margin-right: 0.55rem;
+    border-top: 1px solid var(--rule);
+    vertical-align: middle;
+  }
+  p { margin: 0 0 1.1rem; }
+  section p:last-child { margin-bottom: 0; }
+  a {
+    color: var(--accent);
+    text-underline-offset: 2px;
+  }
+  footer {
+    margin-top: 4.5rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--rule);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  footer a { color: var(--ink-soft); }
+  footer .who { color: var(--ink); font-weight: 600; }
+  .fade { opacity: 0; transform: translateY(0.5rem); animation: rise 0.7s ease forwards; }
+  section.fade { animation-delay: 0.05s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .fade { opacity: 1; transform: none; animation: none; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="fade">
+    <h1>Zero-based redesign</h1>
+    <p class="standfirst">Notes on rebuilding AI systems from zero.</p>
+  </header>
+
+  <section id="the-record" class="fade">
+    <h2><a href="#the-record">The record</a></h2>
+    <p>A company's software already records how it operates: orders, routing decisions, machine readings, the moments a person corrects the model. Taken together that record describes the business more accurately than any process document, because a process document says how the work is supposed to happen and the record says how it did. In most companies nobody reads it.</p>
+    <p>The hard part of integrating AI is rarely collecting data or picking a model. It is connecting what already exists and making it mean the same thing everywhere.</p>
+  </section>
+
+  <section id="corrections" class="fade">
+    <h2><a href="#corrections">Corrections</a></h2>
+    <p>When a person overrides an AI system, they produce the most useful record in it: a specific case where the system was wrong, with the correct answer next to it. Grouped over time, those overrides show which rules have drifted and which decisions the model should never have been handed. Most systems store them and query them for nothing.</p>
+  </section>
+
+  <section id="definitions" class="fade">
+    <h2><a href="#definitions">Definitions</a></h2>
+    <p>Accuracy on a real business problem usually turns on definitions, not model size. A few pages describing what a business means by its own terms move results further than a larger model or a full knowledge graph. Grounding helps most where data is thin and can hurt where it is dense, which is why a generic demo impresses and then fails on the specific case.</p>
+  </section>
+
+  <section id="governance" class="fade">
+    <h2><a href="#governance">Governance</a></h2>
+    <p>The properties that keep an integration safe, read-only access to source systems, a store the organization owns, changes that can be reversed and measured, are not a phase of the work. They hold across every stage or they hold nowhere. Treated as a separate step, they end up decorative.</p>
+  </section>
+
+  <section id="an-open-problem" class="fade">
+    <h2><a href="#an-open-problem">An open problem</a></h2>
+    <p>One problem here is unsolved. Automated judgment of generated visuals works on a still frame, and a still frame carries almost no information about motion. Two animations that differ only in timing produce nearly identical frames at any instant, so a frame-based score cannot tell them apart, even when one reads as correct and the other as broken.</p>
+    <p>Judging motion needs a measurement over time, not a snapshot. No cheap one exists yet. It's the problem I'm working on now.</p>
+  </section>
+
+  <footer class="fade">
+    <p><span class="who">Adam Bankhead.</span> I design and build AI systems, and most of what's here I learned by rebuilding existing ones from scratch.</p>
+    <p><a href="https://github.com/apban">github.com/apban</a></p>
+    <p>This page does not track you. No analytics, no cookies, no third-party requests.</p>
+  </footer>
+</main>
+</body>
+</html>
